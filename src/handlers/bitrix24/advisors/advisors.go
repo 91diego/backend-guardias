@@ -7,7 +7,21 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
+	"github.com/91diego/backend-guardias/src/database"
+	"github.com/91diego/backend-guardias/src/models"
 )
+
+type UserRepo struct {
+	Db *gorm.DB
+}
+
+func New() *UserRepo {
+	db := database.InitDb()
+	db.AutoMigrate(&models.Advisor{})
+	return &UserRepo{Db: db}
+}
 
 func GetAdvisors(c *gin.Context) {
 	api := os.Getenv("BITRIX_SITE")
