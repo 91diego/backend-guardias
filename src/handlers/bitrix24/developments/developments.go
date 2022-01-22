@@ -1,4 +1,4 @@
-package advisors
+package developments
 
 import (
 	"encoding/json"
@@ -10,13 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetAdvisors retrieve advisors from bitrix24
-func GetAdvisors(c *gin.Context) {
+// GetDevelopments retrieve developments from bitrix24
+func GetDevelopments(c *gin.Context) {
 
-	var response models.ResponseAdvisors
+	var response models.ResponseDevelopments
 	api := os.Getenv("BITRIX_SITE")
 	token := os.Getenv("BITRIX_TOKEN")
-	url := api + token + "/user.get?USER_TYPE=employee&WORK_POSITION=ASESOR%20INMOBILIARIO&UF_DEPARTMENT=59&ACTIVE=true"
+	url := api + token + "/crm.deal.fields"
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -46,12 +46,11 @@ func GetAdvisors(c *gin.Context) {
 			"items":   "",
 		})
 	}
-
 	defer res.Body.Close()
 
 	json.Unmarshal(body, &response)
 	c.JSON(200, gin.H{
-		"message": "List of advisors",
+		"message": "List of developments",
 		"code":    200,
 		"items":   response,
 	})

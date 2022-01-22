@@ -3,7 +3,9 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
+	migration_advisor "github.com/91diego/backend-guardias/src/database/migrations"
 	"github.com/91diego/backend-guardias/src/handlers/bitrix24/advisors"
+	"github.com/91diego/backend-guardias/src/handlers/bitrix24/developments"
 )
 
 func Router() {
@@ -11,17 +13,14 @@ func Router() {
 
 	advisorsV1 := router.Group("api/v1/advisors")
 	{
+		migration_advisor.NewAdvisor()
 		advisorsV1.GET("", advisors.GetAdvisors)
 	}
 
-	/*userV1 := router.Group("api/v1/user")
+	developmentV1 := router.Group("api/v1/developments")
 	{
-		userV1.GET("", users.GetUsers)
-		userV1.GET("/by-id", users.GetUserById)
-		userV1.POST("", users.CreateUser)
-		userV1.PUT("", users.UpdateUser)
-		userV1.DELETE("", users.DeleteUser)
-	}*/
+		developmentV1.GET("", developments.GetDevelopments)
+	}
 
 	router.Run()
 }
