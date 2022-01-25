@@ -1,8 +1,20 @@
 package models
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+
 	"gorm.io/gorm"
 )
+
+type AdvisorBitrix struct {
+	UserID        string `json:"ID"`
+	PersonalSreet string `json:"PERSONAL_STREET"`
+}
 
 type Advisor struct {
 	gorm.Model
@@ -30,4 +42,36 @@ type BitrixAdvisors struct {
 	WorkPosition string `json:"WORK_POSITION"`
 	UserType     string `json:"USER_TYPE"`
 	Active       bool   `json:"ACTIVE"`
+}
+
+// UpdateBitrixGuardAdvisor update field PERSONAL_STREET by USER_ID on bitrix24
+func UpdateBitrixGuardAdvisor(advisorBitrix *AdvisorBitrix) (err error) {
+
+	api := os.Getenv("BITRIX_SITE")
+	token := os.Getenv("BITRIX_TOKEN")
+
+	params := url.Values{}
+	params.Add("ID", advisorBitrix.UserID)
+	params.Add("PERSONAL_STREET", advisorBitrix.PersonalSreet)
+
+	resp, err := http.PostForm(api+token+"/user.update", params)
+	if err != nil {
+		log.Printf("Request Failed: %s", err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	// Log the request body
+	bodyString := string(body)
+	log.Print(bodyString)
+	// Unmarshal result
+	guardAdvisor := AdvisorBitrix{}
+	err = json.Unmarshal(body, &guardAdvisor)
+	if err != nil {
+		log.Printf("Reading body failed: %s", err)
+		return
+	}
+
+	log.Println("Guard assigned to advisor: ", guardAdvisor.UserID)
+	return nil
 }

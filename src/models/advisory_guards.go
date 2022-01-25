@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -42,12 +43,25 @@ func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	if err != nil {
 		return err
 	}
+
+	advisorBitrix := AdvisorBitrix{
+		UserID:        advisoryGuard.AdvisorBitrixID,
+		PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+	}
+	// Update field on bitrix24 user profile
+	UpdateBitrixGuardAdvisor(&advisorBitrix)
 	return nil
 }
 
 // UpdateAdvisoryGuard update advisory guard by advisor id
 func UpdateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	db.Save(advisoryGuard)
+	advisorBitrix := AdvisorBitrix{
+		UserID:        advisoryGuard.AdvisorBitrixID,
+		PersonalSreet: "GUARDIA " + strings.ToUpper(advisoryGuard.Development),
+	}
+	// Update field on bitrix24 user profile
+	UpdateBitrixGuardAdvisor(&advisorBitrix)
 	return nil
 }
 
