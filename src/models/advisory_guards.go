@@ -18,16 +18,7 @@ type AdvisorGuard struct {
 	EndGuard            *time.Time
 }
 
-// CreateAdvisoryGuard
-func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
-	err = db.Create(advisoryGuard).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// GetAdvisoryGuards
+// GetAdvisoryGuards retrieve all advisory guards
 func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	err = db.Find(advisoryGuard).Error
 	if err != nil {
@@ -36,7 +27,7 @@ func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	return nil
 }
 
-// GetAdvisoryGuardByID
+// GetAdvisoryGuardByID retrieve by advisor id
 func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (err error) {
 	err = db.Where("id = ?", id).First(advisoryGuard).Error
 	if err != nil {
@@ -45,13 +36,22 @@ func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (
 	return nil
 }
 
-// UpdateAdvisoryGuard
+// CreateAdvisoryGuard create new advisory guard
+func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
+	err = db.Create(advisoryGuard).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateAdvisoryGuard update advisory guard by advisor id
 func UpdateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	db.Save(advisoryGuard)
 	return nil
 }
 
-// DeleteAdvisoryGuard
+// DeleteAdvisoryGuard delete advisory guard by id
 func DeleteAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (err error) {
 	db.Where("id = ?", id).Delete(advisoryGuard)
 	return nil
