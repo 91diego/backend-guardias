@@ -50,9 +50,9 @@ func GetAdvisors(c *gin.Context) {
 	defer res.Body.Close()
 
 	json.Unmarshal(body, &response)
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "List of advisors",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   response,
 	})
 }

@@ -1,48 +1,52 @@
 package advisoryguards
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 // GetAllAdvisoryGuards retrieve all advisory guards
 func GetAdvisoryGuards(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "GetAdvisoryGuards METHOD",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   "",
 	})
 }
 
-// GetAdvisoryGuard retrieve by advisor id
+// GetAdvisoryGuardByID retrieve by advisor id
 func GetAdvisoryGuardByID(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "GetAdvisoryGuardByID METHOD",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   "",
 	})
 }
 
 // CreateAdvisoryGuard Create new advisory guard
 func CreateAdvisoryGuard(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "CreateAdvisoryGuard METHOD",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   "",
 	})
 }
 
 // UpdateAdvisoryGuard update advisory guard by advisor id
 func UpdateAdvisoryGuard(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "UpdateAdvisoryGuard METHOD",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   "",
 	})
 }
 
 // DeleteAdvisoryGuard delete advisory guard by id
 func DeleteAdvisoryGuard(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "DeleteAdvisoryGuard METHOD",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   "",
 	})
 }

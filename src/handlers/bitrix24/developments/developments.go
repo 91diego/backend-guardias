@@ -20,9 +20,9 @@ func GetDevelopments(c *gin.Context) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
-			"code":    400,
+			"code":    http.StatusInternalServerError,
 			"items":   "",
 		})
 	}
@@ -31,27 +31,27 @@ func GetDevelopments(c *gin.Context) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
-			"code":    400,
+			"code":    http.StatusInternalServerError,
 			"items":   "",
 		})
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
-			"code":    400,
+			"code":    http.StatusInternalServerError,
 			"items":   "",
 		})
 	}
 	defer res.Body.Close()
 
 	json.Unmarshal(body, &response)
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "List of developments",
-		"code":    200,
+		"code":    http.StatusOK,
 		"items":   response,
 	})
 }
