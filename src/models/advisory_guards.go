@@ -1,8 +1,7 @@
 package models
 
 import (
-	"strings"
-	"time"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -10,18 +9,20 @@ import (
 type AdvisorGuard struct {
 	gorm.Model
 	ID                  int
-	AdvisorBitrixID     string
-	Name                string
-	LastName            string
-	DevelopmentBitrixID string
-	Development         string
-	StartGuard          *time.Time
-	EndGuard            *time.Time
+	AdvisorBitrixID     string `json:"advisor_bitrix_id"`
+	Name                string `json:"name"`
+	LastName            string `json:"last_name"`
+	DevelopmentBitrixID string `json:"development_bitrix_id"`
+	Development         string `json:"development"`
+	StartGuard          string `json:"start_guard"`
+	EndGuard            string `json:"end_guard"`
+	// `json:"end_guard" gorm:"column:end_guard; type:timestamp; not null"`
 }
 
 // GetAdvisoryGuards retrieve all advisory guards
 func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	err = db.Find(advisoryGuard).Error
+	fmt.Println("err", err)
 	if err != nil {
 		return err
 	}
@@ -37,36 +38,51 @@ func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (
 	return nil
 }
 
+// GetAdvisoryGuardByDate
+func GetAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryResult *gorm.DB, err error) {
+	db.Begin()
+	queryResult = db.Where("start_guard = ? and end_guard = ?",
+		advisoryGuard.StartGuard, advisoryGuard.EndGuard).Find(&advisoryGuard)
+	if queryResult.Error != nil {
+		db.Rollback()
+		return nil, err
+	}
+	db.Commit()
+	return queryResult, nil
+}
+
 // CreateAdvisoryGuard create new advisory guard
 func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
+	db.Begin()
 	err = db.Create(advisoryGuard).Error
 	if err != nil {
+		db.Rollback()
 		return err
 	}
-
-	advisorBitrix := AdvisorBitrix{
-		UserID:        advisoryGuard.AdvisorBitrixID,
-		PersonalSreet: "GUARDIA " + advisoryGuard.Development,
-	}
-	// Update field on bitrix24 user profile
-	UpdateBitrixGuardAdvisor(&advisorBitrix)
+	db.Commit()
 	return nil
 }
 
 // UpdateAdvisoryGuard update advisory guard by advisor id
 func UpdateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
-	db.Save(advisoryGuard)
-	advisorBitrix := AdvisorBitrix{
-		UserID:        advisoryGuard.AdvisorBitrixID,
-		PersonalSreet: "GUARDIA " + strings.ToUpper(advisoryGuard.Development),
+	db.Begin()
+	err = db.Save(&advisoryGuard).Error
+	if err != nil {
+		db.Rollback()
+		return err
 	}
-	// Update field on bitrix24 user profile
-	UpdateBitrixGuardAdvisor(&advisorBitrix)
+	db.Commit()
 	return nil
 }
 
 // DeleteAdvisoryGuard delete advisory guard by id
 func DeleteAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (err error) {
-	db.Where("id = ?", id).Delete(advisoryGuard)
+	db.Begin()
+	err = db.Where("id = ?", id).Delete(advisoryGuard).Error
+	if err != nil {
+		db.Rollback()
+		return err
+	}
+	db.Commit()
 	return nil
 }
