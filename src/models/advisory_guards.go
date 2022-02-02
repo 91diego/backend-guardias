@@ -41,8 +41,8 @@ func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (
 // GetAdvisoryGuardByDate
 func GetAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryResult *gorm.DB, err error) {
 	db.Begin()
-	queryResult = db.Where("start_guard = ? and end_guard = ?",
-		advisoryGuard.StartGuard, advisoryGuard.EndGuard).Find(&advisoryGuard)
+	queryResult = db.Where("start_guard = ? and end_guard = ? and development_bitrix_id = ?",
+		advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.DevelopmentBitrixID).Find(&advisoryGuard)
 	if queryResult.Error != nil {
 		db.Rollback()
 		return nil, err

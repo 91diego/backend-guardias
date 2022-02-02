@@ -25,6 +25,7 @@ func New() *AdvisoryGuardRepo {
 func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 
 	var advisoryGuard []models.AdvisorGuard
+
 	err := models.GetAdvisoryGuards(repository.Db, &advisoryGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -33,7 +34,6 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -49,6 +49,7 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 
 	id, _ := c.Params.Get("id")
 	var advisoryGuard models.AdvisorGuard
+
 	err := models.GetAdvisoryGuardByID(repository.Db, &advisoryGuard, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -58,7 +59,6 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 				"status":  "warning",
 				"items":   "",
 			})
-			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
@@ -66,7 +66,6 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -96,8 +95,12 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 	if rows < 1 {
 		err = models.CreateAdvisoryGuard(repository.Db, &advisoryGuard)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
-			return
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+				"code":    http.StatusInternalServerError,
+				"status":  "warning",
+				"items":   "",
+			})
 		}
 		// Update field on bitrix24 user profile
 		advisorBitrix := models.AdvisorBitrix{
@@ -131,6 +134,7 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 
 	var advisoryGuard models.AdvisorGuard
 	id := c.Query("id")
+
 	err := models.GetAdvisoryGuardByID(repository.Db, &advisoryGuard, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
