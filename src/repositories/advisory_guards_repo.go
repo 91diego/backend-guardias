@@ -7,6 +7,7 @@ import (
 
 	"github.com/91diego/backend-guardias/src/database"
 	"github.com/91diego/backend-guardias/src/models"
+	"github.com/91diego/backend-guardias/src/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -84,11 +85,26 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 	// AND END DATE CAN NOT BE LOWER THAN START DATE
 	var rows int
 	var advisoryGuard models.AdvisorGuard
+
 	c.BindJSON(&advisoryGuard)
+	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "warning",
+			"items":   "",
+		})
+	}
+
 	res, err := models.GetAdvisoryGuardByDate(repository.Db, &advisoryGuard)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
-		return
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "warning",
+			"items":   "",
+		})
 	}
 
 	rows = int(res.RowsAffected)
@@ -102,12 +118,16 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 				"items":   "",
 			})
 		}
+
 		// Update field on bitrix24 user profile
-		advisorBitrix := models.AdvisorBitrix{
-			UserID:        advisoryGuard.AdvisorBitrixID,
-			PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+		if guardValidaton {
+			advisorBitrix := models.AdvisorBitrix{
+				UserID:        advisoryGuard.AdvisorBitrixID,
+				PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+			}
+			models.UpdateBitrixGuardAdvisor(&advisorBitrix)
 		}
-		models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "La guardia ha sido asignada exitosamente.",
 			"code":    http.StatusCreated,
@@ -154,6 +174,16 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 	}
 
 	c.BindJSON(&advisoryGuard)
+	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "warning",
+			"items":   "",
+		})
+	}
+
 	err = models.UpdateAdvisoryGuard(repository.Db, &advisoryGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -165,11 +195,13 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 	}
 
 	// Update field on bitrix24 user profile
-	advisorBitrix := models.AdvisorBitrix{
-		UserID:        advisoryGuard.AdvisorBitrixID,
-		PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+	if guardValidaton {
+		advisorBitrix := models.AdvisorBitrix{
+			UserID:        advisoryGuard.AdvisorBitrixID,
+			PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+		}
+		models.UpdateBitrixGuardAdvisor(&advisorBitrix)
 	}
-	models.UpdateBitrixGuardAdvisor(&advisorBitrix)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "La guardia ha sido modificada.",
@@ -203,6 +235,16 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 		})
 	}
 
+	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "warning",
+			"items":   "",
+		})
+	}
+
 	err = models.DeleteAdvisoryGuard(repository.Db, &advisoryGuard, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -211,6 +253,15 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+	}
+
+	// Update field on bitrix24 user profile
+	if guardValidaton {
+		advisorBitrix := models.AdvisorBitrix{
+			UserID:        advisoryGuard.AdvisorBitrixID,
+			PersonalSreet: "",
+		}
+		models.UpdateBitrixGuardAdvisor(&advisorBitrix)
 	}
 	c.JSON(http.StatusGone, gin.H{
 		"message": "La guardia ha sido eliminada.",
