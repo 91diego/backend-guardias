@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 )
 
@@ -16,13 +14,12 @@ type AdvisorGuard struct {
 	Development         string `json:"development"`
 	StartGuard          string `json:"start_guard"`
 	EndGuard            string `json:"end_guard"`
-	// `json:"end_guard" gorm:"column:end_guard; type:timestamp; not null"`
+	GuardShift          string `json:"guard_shift"`
 }
 
 // GetAdvisoryGuards retrieve all advisory guards
 func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	err = db.Find(advisoryGuard).Error
-	fmt.Println("err", err)
 	if err != nil {
 		return err
 	}

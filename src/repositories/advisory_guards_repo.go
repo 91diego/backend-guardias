@@ -35,6 +35,7 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -60,6 +61,7 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 				"status":  "warning",
 				"items":   "",
 			})
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
@@ -67,6 +69,7 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -95,6 +98,7 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	res, err := models.GetAdvisoryGuardByDate(repository.Db, &advisoryGuard)
@@ -105,6 +109,7 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	rows = int(res.RowsAffected)
@@ -117,6 +122,7 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 				"status":  "warning",
 				"items":   "",
 			})
+			return
 		}
 
 		// Update field on bitrix24 user profile
@@ -134,6 +140,7 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 			"status":  "success",
 			"items":   advisoryGuard,
 		})
+		return
 	} else {
 		c.JSON(http.StatusFound, gin.H{
 			"message": fmt.Sprintf("La fecha %v se encuentra ocupada por el asesor %v %v. ¿Desea actualizar la guardia?",
@@ -142,6 +149,7 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 			"status": "warning",
 			"items":  advisoryGuard,
 		})
+		return
 	}
 }
 
@@ -164,6 +172,7 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 				"status":  "warning",
 				"items":   "",
 			})
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
@@ -171,6 +180,7 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	c.BindJSON(&advisoryGuard)
@@ -182,6 +192,7 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	err = models.UpdateAdvisoryGuard(repository.Db, &advisoryGuard)
@@ -192,6 +203,7 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	// Update field on bitrix24 user profile
@@ -226,6 +238,7 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 				"status":  "warning",
 				"items":   "",
 			})
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
@@ -233,6 +246,7 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
@@ -243,6 +257,7 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	err = models.DeleteAdvisoryGuard(repository.Db, &advisoryGuard, id)
@@ -253,6 +268,7 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 			"status":  "warning",
 			"items":   "",
 		})
+		return
 	}
 
 	// Update field on bitrix24 user profile
