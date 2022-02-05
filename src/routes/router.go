@@ -27,6 +27,7 @@ func Router() {
 	{
 		migrations.NewAdvisoryGuard()
 		advisoryGuardsV1.GET("", advisoryguards.GetAdvisoryGuards)
+		advisoryGuardsV1.GET("/params", advisoryguards.GetAdvisoryGuardsParams)
 		advisoryGuardsV1.GET("/by-id", advisoryguards.GetAdvisoryGuardByID)
 		advisoryGuardsV1.POST("", advisoryguards.CreateAdvisoryGuard)
 		advisoryGuardsV1.PUT("", advisoryguards.UpdateAdvisoryGuard)

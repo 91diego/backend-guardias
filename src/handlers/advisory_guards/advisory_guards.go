@@ -10,6 +10,11 @@ func GetAdvisoryGuards(c *gin.Context) {
 	repositories.New().GetAdvisoryGuards(c)
 }
 
+// GetAdvisoryGuardsParams retrieve advisory guards depending on params
+func GetAdvisoryGuardsParams(c *gin.Context) {
+	repositories.New().GetAdvisoryGuardsParams(c)
+}
+
 // GetAdvisoryGuardByID retrieve by advisor id
 func GetAdvisoryGuardByID(c *gin.Context) {
 	repositories.New().GetAdvisoryGuardByID(c)

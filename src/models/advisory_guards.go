@@ -26,6 +26,28 @@ func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	return nil
 }
 
+// GetAdvisoryGuardsParams retrieve advisory guards depending on params
+func GetAdvisoryGuardsParams(db *gorm.DB, development, startDate, endDate string, advisoryGuard *[]AdvisorGuard) (err error) {
+
+	var query string
+	// all records on the date range
+	if development == "" && startDate != "" && endDate != "" {
+		query = "start_guard = ? and end_guard = ?"
+		err = db.Where(query, startDate, endDate).Find(&advisoryGuard).Error
+	}
+
+	// records per development on the date range
+	if development != "" && startDate != "" && endDate != "" {
+		query = "development_bitrix_id = ? and start_guard BETWEEN ? AND ?"
+		err = db.Where(query, development, startDate, endDate).Find(&advisoryGuard).Error
+	}
+
+	if err != nil {
+		return err
+	}
+	return
+}
+
 // GetAdvisoryGuardByID retrieve by advisor id
 func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (err error) {
 	err = db.Where("id = ?", id).First(advisoryGuard).Error
