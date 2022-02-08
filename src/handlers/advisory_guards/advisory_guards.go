@@ -20,6 +20,11 @@ func GetAdvisoryGuardByID(c *gin.Context) {
 	repositories.New().GetAdvisoryGuardByID(c)
 }
 
+// CheckAdvisoryGuardByDate check if guard exists
+func CheckAdvisoryGuardByDate(c *gin.Context) {
+	repositories.New().CheckAdvisoryGuardByDate(c)
+}
+
 // CreateAdvisoryGuard Create new advisory guard
 func CreateAdvisoryGuard(c *gin.Context) {
 	repositories.New().CreateAdvisoryGuard(c)

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/91diego/backend-guardias/src/database"
 	"github.com/91diego/backend-guardias/src/models"
@@ -108,17 +107,13 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 	})
 }
 
-// CreateAdvisoryGuard create new advisory guard
-func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
+func (repository *AdvisoryGuardRepo) CheckAdvisoryGuardByDate(c *gin.Context) {
 
-	// TODO
-	// VALIDATE DATES, START DATE CAN NOT BE GREATHER THAN END DATE
-	// AND END DATE CAN NOT BE LOWER THAN START DATE
 	var rows int
 	var advisoryGuard models.AdvisorGuard
-
 	c.BindJSON(&advisoryGuard)
-	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
+
+	err := utils.ValidateDates(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
@@ -129,62 +124,18 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 		return
 	}
 
-	res, err := models.GetAdvisoryGuardByDate(repository.Db, &advisoryGuard)
+	res, err := models.CheckAdvisoryGuardByDate(repository.Db, &advisoryGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+			"message": fmt.Sprintf("Ha ocurrido un error: %v.", err),
 			"code":    http.StatusInternalServerError,
 			"status":  "warning",
 			"items":   "",
 		})
 		return
 	}
-
 	rows = int(res.RowsAffected)
-	if rows < 1 {
-		err = models.CreateAdvisoryGuard(repository.Db, &advisoryGuard)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
-				"code":    http.StatusInternalServerError,
-				"status":  "warning",
-				"items":   "",
-			})
-			return
-		}
-		if advisoryGuard.GuardShift == "MATUTINA" {
-			advisoryStartDate := strings.Split(advisoryGuard.StartGuard, " ")
-			advisoryGuard.GuardShift = "NOCTURNA"
-			advisoryGuard.StartGuard = advisoryStartDate[0] + "-" + advisoryStartDate[1] + "-" + advisoryStartDate[3] + "19:00:59"
-			err = models.CreateAdvisoryGuard(repository.Db, &advisoryGuard)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
-					"code":    http.StatusInternalServerError,
-					"status":  "warning",
-					"items":   "",
-				})
-				return
-			}
-		}
-
-		// Update field on bitrix24 user profile
-		if guardValidaton {
-			advisorBitrix := models.AdvisorBitrix{
-				UserID:        advisoryGuard.AdvisorBitrixID,
-				PersonalSreet: "GUARDIA " + advisoryGuard.Development,
-			}
-			models.UpdateBitrixGuardAdvisor(&advisorBitrix)
-		}
-
-		c.JSON(http.StatusCreated, gin.H{
-			"message": "La guardia ha sido asignada exitosamente.",
-			"code":    http.StatusCreated,
-			"status":  "success",
-			"items":   advisoryGuard,
-		})
-		return
-	} else {
+	if rows > 0 {
 		c.JSON(http.StatusFound, gin.H{
 			"message": fmt.Sprintf("La fecha %v se encuentra ocupada por el asesor %v %v. ¿Desea actualizar la guardia?",
 				advisoryGuard.StartGuard, advisoryGuard.Name, advisoryGuard.LastName),
@@ -194,14 +145,74 @@ func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
 		})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OK",
+		"code":    http.StatusOK,
+		"status":  "success",
+		"items":   "",
+	})
+}
+
+// CreateAdvisoryGuard create new advisory guard
+func (repository *AdvisoryGuardRepo) CreateAdvisoryGuard(c *gin.Context) {
+
+	var advisoryGuard models.AdvisorGuard
+	c.BindJSON(&advisoryGuard)
+
+	// Update field on bitrix24 user profile
+	advisorBitrix := models.AdvisorBitrix{
+		UserID:        advisoryGuard.AdvisorBitrixID,
+		PersonalSreet: "GUARDIA " + advisoryGuard.Development,
+	}
+
+	currentDate, err := utils.ValidateCurrentDate(advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.GuardShift)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "error",
+			"items":   "",
+		})
+		return
+	}
+
+	// Add guard field to bitrix24 user
+	if currentDate {
+		err := models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+				"code":    http.StatusInternalServerError,
+				"status":  "error",
+				"items":   "",
+			})
+			return
+		}
+	}
+
+	// Create record on DB
+	err = models.CreateAdvisoryGuard(repository.Db, &advisoryGuard)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error: %v.", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "error",
+			"items":   "",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "La guardia ha sido asignada exitosamente.",
+		"code":    http.StatusCreated,
+		"status":  "success",
+		"items":   advisoryGuard,
+	})
+
 }
 
 // UpdateAdvisoryGuard update advisory guard by advisor id
 func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
-
-	// TODO
-	// VALIDATE DATES, START DATE CAN NOT BE GREATHER THAN END DATE
-	// AND END DATE CAN NOT BE LOWER THAN START DATE
 
 	var advisoryGuard models.AdvisorGuard
 	id := c.Query("id")
@@ -227,17 +238,6 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 	}
 
 	c.BindJSON(&advisoryGuard)
-	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
-			"code":    http.StatusInternalServerError,
-			"status":  "warning",
-			"items":   "",
-		})
-		return
-	}
-
 	err = models.UpdateAdvisoryGuard(repository.Db, &advisoryGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -249,13 +249,32 @@ func (repository *AdvisoryGuardRepo) UpdateAdvisoryGuard(c *gin.Context) {
 		return
 	}
 
+	currentDate, err := utils.ValidateCurrentDate(advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.GuardShift)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+			"code":    http.StatusInternalServerError,
+			"status":  "error",
+			"items":   "",
+		})
+		return
+	}
 	// Update field on bitrix24 user profile
-	if guardValidaton {
+	if currentDate {
 		advisorBitrix := models.AdvisorBitrix{
 			UserID:        advisoryGuard.AdvisorBitrixID,
 			PersonalSreet: "GUARDIA " + advisoryGuard.Development,
 		}
-		models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+		err := models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+				"code":    http.StatusInternalServerError,
+				"status":  "error",
+				"items":   "",
+			})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -292,12 +311,12 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 		return
 	}
 
-	guardValidaton, err := utils.ValidateGuard(advisoryGuard.StartGuard, advisoryGuard.EndGuard)
+	currentDate, err := utils.ValidateCurrentDate(advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.GuardShift)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": fmt.Sprintf("Ha ocurrido un error %v: ", err),
+			"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
 			"code":    http.StatusInternalServerError,
-			"status":  "warning",
+			"status":  "error",
 			"items":   "",
 		})
 		return
@@ -315,12 +334,21 @@ func (repository *AdvisoryGuardRepo) DeleteAdvisoryGuard(c *gin.Context) {
 	}
 
 	// Update field on bitrix24 user profile
-	if guardValidaton {
+	if currentDate {
 		advisorBitrix := models.AdvisorBitrix{
 			UserID:        advisoryGuard.AdvisorBitrixID,
 			PersonalSreet: "",
 		}
-		models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+		err := models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("Ha ocurrido un error: %v ", err),
+				"code":    http.StatusInternalServerError,
+				"status":  "error",
+				"items":   "",
+			})
+			return
+		}
 	}
 	c.JSON(http.StatusGone, gin.H{
 		"message": "La guardia ha sido eliminada.",

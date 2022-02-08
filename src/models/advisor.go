@@ -72,6 +72,6 @@ func UpdateBitrixGuardAdvisor(advisorBitrix *AdvisorBitrix) (err error) {
 		return
 	}
 
-	log.Println("Guard assigned to advisor: ", guardAdvisor.UserID)
+	log.Println("Guard assigned to advisor: ", advisorBitrix.UserID)
 	return nil
 }

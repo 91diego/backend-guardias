@@ -21,9 +21,9 @@ type AdvisorGuard struct {
 func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	err = db.Find(advisoryGuard).Error
 	if err != nil {
-		return err
+		return
 	}
-	return nil
+	return
 }
 
 // GetAdvisoryGuardsParams retrieve advisory guards depending on params
@@ -43,7 +43,7 @@ func GetAdvisoryGuardsParams(db *gorm.DB, development, startDate, endDate string
 	}
 
 	if err != nil {
-		return err
+		return
 	}
 	return
 }
@@ -52,34 +52,46 @@ func GetAdvisoryGuardsParams(db *gorm.DB, development, startDate, endDate string
 func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (err error) {
 	err = db.Where("id = ?", id).First(advisoryGuard).Error
 	if err != nil {
-		return err
+		return
 	}
-	return nil
+	return
 }
 
-// GetAdvisoryGuardByDate
-func GetAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryResult *gorm.DB, err error) {
+// CheckAdvisoryGuardByDate check if exists guards on the range dates
+func CheckAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryResult *gorm.DB, err error) {
 	db.Begin()
-	queryResult = db.Where("start_guard = ? and end_guard = ? and development_bitrix_id = ?",
-		advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.DevelopmentBitrixID).Find(&advisoryGuard)
+	queryResult = db.Where("start_guard = ? and end_guard = ? and development_bitrix_id = ? and guard_shift = ?",
+		advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.DevelopmentBitrixID, advisoryGuard.GuardShift).Find(&advisoryGuard)
 	if queryResult.Error != nil {
 		db.Rollback()
-		return nil, err
+		return
 	}
 	db.Commit()
-	return queryResult, nil
+	return
 }
 
 // CreateAdvisoryGuard create new advisory guard
 func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	db.Begin()
-	err = db.Create(advisoryGuard).Error
+	/*fmt.Println("B1:", advisoryGuard.GuardShift)
+	if advisoryGuard.GuardShift == "MATUTINO" {
+		advisoryGuard.GuardShift = "NOCTURNO"
+	}
+	fmt.Println("B2:", advisoryGuard.GuardShift)*/
+	// Found AdvisorGuard with params or create
+	err = db.Where(AdvisorGuard{
+		AdvisorBitrixID: advisoryGuard.AdvisorBitrixID,
+		StartGuard:      advisoryGuard.StartGuard,
+		EndGuard:        advisoryGuard.EndGuard,
+		GuardShift:      advisoryGuard.GuardShift,
+	}).FirstOrCreate(&advisoryGuard).Error
+	// err = db.Create(advisoryGuard).Error
 	if err != nil {
 		db.Rollback()
-		return err
+		return
 	}
 	db.Commit()
-	return nil
+	return
 }
 
 // UpdateAdvisoryGuard update advisory guard by advisor id
@@ -88,10 +100,10 @@ func UpdateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	err = db.Save(&advisoryGuard).Error
 	if err != nil {
 		db.Rollback()
-		return err
+		return
 	}
 	db.Commit()
-	return nil
+	return
 }
 
 // DeleteAdvisoryGuard delete advisory guard by id
@@ -100,8 +112,8 @@ func DeleteAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (e
 	err = db.Where("id = ?", id).Delete(advisoryGuard).Error
 	if err != nil {
 		db.Rollback()
-		return err
+		return
 	}
 	db.Commit()
-	return nil
+	return
 }
