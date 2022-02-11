@@ -16,3 +16,5 @@ vendor/
 
 # Environment variables
 .env
+
+guardias_idex.json

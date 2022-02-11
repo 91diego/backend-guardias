@@ -86,7 +86,7 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardsParams(c *gin.Context) {
 // GetAdvisoryGuardByID retrieve by advisor id
 func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByID(c *gin.Context) {
 
-	id, _ := c.Params.Get("id")
+	id := c.Query("id")
 	var advisoryGuard models.AdvisorGuard
 
 	err := models.GetAdvisoryGuardByID(repository.Db, &advisoryGuard, id)
