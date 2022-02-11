@@ -54,6 +54,16 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuardsParams(c *gin.Context) {
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 
+	if startDate == "" || endDate == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "La fecha de inicio y la fecha final son necesarios.",
+			"code":    http.StatusBadRequest,
+			"status":  "warning",
+			"items":   "",
+		})
+		return
+	}
+
 	err := models.GetAdvisoryGuardsParams(repository.Db, development, startDate, endDate, &advisoryGuard)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

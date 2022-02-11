@@ -32,7 +32,7 @@ func GetAdvisoryGuardsParams(db *gorm.DB, development, startDate, endDate string
 	var query string
 	// all records on the date range
 	if development == "" && startDate != "" && endDate != "" {
-		query = "start_guard = ? and end_guard = ?"
+		query = "start_guard BETWEEN ? AND ?"
 		err = db.Where(query, startDate, endDate).Find(&advisoryGuard).Error
 	}
 
@@ -60,7 +60,7 @@ func GetAdvisoryGuardByID(db *gorm.DB, advisoryGuard *AdvisorGuard, id string) (
 // CheckAdvisoryGuardByDate check if exists guards on the range dates
 func CheckAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryResult *gorm.DB, err error) {
 	db.Begin()
-	queryResult = db.Where("start_guard = ? and end_guard = ? and development_bitrix_id = ? and guard_shift = ?",
+	queryResult = db.Where("start_guard = ? and end_guard = ? and development_bitrix_id = ? and guard_shift = ? and deleted_at != null",
 		advisoryGuard.StartGuard, advisoryGuard.EndGuard, advisoryGuard.DevelopmentBitrixID, advisoryGuard.GuardShift).Find(&advisoryGuard)
 	if queryResult.Error != nil {
 		db.Rollback()
@@ -73,19 +73,13 @@ func CheckAdvisoryGuardByDate(db *gorm.DB, advisoryGuard *AdvisorGuard) (queryRe
 // CreateAdvisoryGuard create new advisory guard
 func CreateAdvisoryGuard(db *gorm.DB, advisoryGuard *AdvisorGuard) (err error) {
 	db.Begin()
-	/*fmt.Println("B1:", advisoryGuard.GuardShift)
-	if advisoryGuard.GuardShift == "MATUTINO" {
-		advisoryGuard.GuardShift = "NOCTURNO"
-	}
-	fmt.Println("B2:", advisoryGuard.GuardShift)*/
 	// Found AdvisorGuard with params or create
-	err = db.Where(AdvisorGuard{
-		AdvisorBitrixID: advisoryGuard.AdvisorBitrixID,
-		StartGuard:      advisoryGuard.StartGuard,
-		EndGuard:        advisoryGuard.EndGuard,
-		GuardShift:      advisoryGuard.GuardShift,
-	}).FirstOrCreate(&advisoryGuard).Error
-	// err = db.Create(advisoryGuard).Error
+	/*err = db.Where(AdvisorGuard{
+		StartGuard: advisoryGuard.StartGuard,
+		EndGuard:   advisoryGuard.EndGuard,
+		GuardShift: advisoryGuard.GuardShift,
+	}).FirstOrCreate(&advisoryGuard).Error*/
+	err = db.Create(advisoryGuard).Error
 	if err != nil {
 		db.Rollback()
 		return
