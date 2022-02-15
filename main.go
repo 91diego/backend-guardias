@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/91diego/backend-guardias/src/routes"
 	"github.com/91diego/backend-guardias/src/utils"
-	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -32,11 +29,11 @@ func main() {
 	//c.Remove(entryID2)
 	//c.AddFunc("*/1 * * * *", func() { log.Info("[Job 2]Every one minute job\n") })
 	//time.Sleep(5 * time.Minute)
-	fmt.Println("JOB CRON")
-	c := cron.New()
-	c.AddFunc("*/1 * * * *", func() { fmt.Println("[Job 1]Every minute job\n") })
+	//fmt.Println("JOB CRON")
+	//c := cron.New()
+	//c.AddFunc("*/1 * * * *", func() { fmt.Println("[Job 1]Every minute job\n") })
 	// start cron with one scheduled job
-	fmt.Println("Start cron")
-	utils.PrintCronEntries(c.Entries())
+	//fmt.Println("Start cron")
+	//utils.PrintCronEntries(c.Entries())
 	routes.Router()
 }
