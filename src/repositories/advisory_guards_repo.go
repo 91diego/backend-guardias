@@ -46,6 +46,16 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 	})
 }
 
+// GetAdvisoryGuardByShift
+func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByShift(shift, date string, advisoryGuard *[]models.AdvisorGuard) (err error) {
+
+	err = models.GetAdvisoryGuardByShift(repository.Db, shift, date, advisoryGuard)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // GetAdvisoryGuardsParams retrieve advisory guards depending on params
 func (repository *AdvisoryGuardRepo) GetAdvisoryGuardsParams(c *gin.Context) {
 
