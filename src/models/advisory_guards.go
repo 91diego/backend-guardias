@@ -26,6 +26,17 @@ func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	return
 }
 
+// GetAdvisoryGuardByShift
+func GetAdvisoryGuardByShift(db *gorm.DB, shift, date string, advisoryGuard *[]AdvisorGuard) (err error) {
+
+	query := "guard_shift = ? AND start_guard = ?"
+	err = db.Where(query, shift, date).Find(&advisoryGuard).Error
+	if err != nil {
+		return
+	}
+	return
+}
+
 // GetAdvisoryGuardsParams retrieve advisory guards depending on params
 func GetAdvisoryGuardsParams(db *gorm.DB, development, startDate, endDate string, advisoryGuard *[]AdvisorGuard) (err error) {
 

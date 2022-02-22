@@ -35,5 +35,5 @@ func Router() {
 		advisoryGuardsV1.DELETE("", advisoryguards.DeleteAdvisoryGuard)
 	}
 
-	router.Run(":8010")
+	router.Run(":8087")
 }
