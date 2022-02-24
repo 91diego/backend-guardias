@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -47,9 +48,9 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 }
 
 // GetAdvisoryGuardByShift
-func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByShift(shift, date string, advisoryGuard *[]models.AdvisorGuard) (err error) {
+func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByShift(shift, date string, advisoryGuard *[]models.AdvisorGuard) (response *sql.Rows, err error) {
 
-	err = models.GetAdvisoryGuardByShift(repository.Db, shift, date, advisoryGuard)
+	response, err = models.GetAdvisoryGuardByShift(repository.Db, shift, date, advisoryGuard)
 	if err != nil {
 		return
 	}
