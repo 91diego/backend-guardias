@@ -7,6 +7,7 @@ import (
 	"github.com/91diego/backend-guardias/src/models"
 	"github.com/91diego/backend-guardias/src/repositories"
 	"github.com/91diego/backend-guardias/src/routes"
+	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 )
 
@@ -20,6 +21,7 @@ func main() {
 	c.AddFunc("33 20 * * *", CheckGuards)
 	c.Start()
 
+	gin.SetMode(gin.ReleaseMode)
 	routes.Router()
 }
 
