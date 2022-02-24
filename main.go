@@ -19,7 +19,7 @@ func main() {
 	c := cron.New(cron.WithLocation(mexicoCity))
 	c.AddFunc("00 10 * * *", CheckGuards)
 	c.AddFunc("30 14 * * *", CheckGuards)
-	c.AddFunc("33 20 * * *", CheckGuards)
+	c.AddFunc("00 19 * * *", CheckGuards)
 	c.Start()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -56,7 +56,7 @@ func CheckGuards() {
 		"14", "30", "00")
 	eveningGuardChange := fmt.Sprintf("%d-%02d-%02d %02v:%02v:%02v",
 		now.Year(), now.Month(), now.Day(),
-		"20", "33", "00")
+		"19", "00", "00")
 
 	morningLayoutParse, err := time.Parse(layout, morningChangeLayout)
 	if err != nil {
