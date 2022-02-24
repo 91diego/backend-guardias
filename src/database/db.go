@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/91diego/backend-guardias/src/utils"
 	"gorm.io/driver/mysql"
@@ -19,11 +20,11 @@ func connectDB() *gorm.DB {
 	var err error
 	utils.EnvVariables()
 
-	dbUserName := "calendar_user"        //os.Getenv("DB_USERNAME")
-	dbPassword := " id3xGu@r1asAs3s0r3s" //os.Getenv("DB_PASSWORD")
-	dbHost := "localhost"                // os.Getenv("DB_HOST")
-	dbPort := "3306"                     //os.Getenv("DB_PORT")
-	dbName := "guardias"                 //os.Getenv("DB_NAME")
+	dbUserName := os.Getenv("DB_USERNAME")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
 
 	dsn := dbUserName + ":" + dbPassword + "@tcp" + "(" + dbHost + ":" + dbPort + ")/" + dbName + "?parseTime=true&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
