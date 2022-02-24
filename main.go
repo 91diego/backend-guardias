@@ -7,13 +7,12 @@ import (
 	"github.com/91diego/backend-guardias/src/models"
 	"github.com/91diego/backend-guardias/src/repositories"
 	"github.com/91diego/backend-guardias/src/routes"
-	"github.com/91diego/backend-guardias/src/utils"
 	"github.com/robfig/cron/v3"
 )
 
 func main() {
 
-	utils.EnvVariables()
+	// utils.EnvVariables()
 	mexicoCity, _ := time.LoadLocation("America/Mexico_City")
 	c := cron.New(cron.WithLocation(mexicoCity))
 	c.AddFunc("00 10 * * *", CheckGuards)

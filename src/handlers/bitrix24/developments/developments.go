@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/91diego/backend-guardias/src/models"
 	"github.com/gin-gonic/gin"
@@ -14,8 +13,8 @@ import (
 func GetDevelopments(c *gin.Context) {
 
 	var response models.ResponseDevelopments
-	api := os.Getenv("BITRIX_SITE")
-	token := os.Getenv("BITRIX_TOKEN")
+	api := "https://intranet.idex.cc/rest/1/" // os.Getenv("BITRIX_SITE")
+	token := "evcwp69f5yg7gkwc"               // os.Getenv("BITRIX_TOKEN")
 	url := api + token + "/crm.deal.fields"
 
 	req, err := http.NewRequest("GET", url, nil)
