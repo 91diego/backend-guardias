@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 
+	"github.com/91diego/backend-guardias/config"
 	"github.com/91diego/backend-guardias/src/models"
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +14,10 @@ import (
 func GetAdvisors(c *gin.Context) {
 
 	var response models.ResponseAdvisors
-	api := os.Getenv("BITRIX_SITE")
-	token := os.Getenv("BITRIX_TOKEN")
+	bitrix, _ := config.SetUp()
+
+	api := bitrix.BitrixSite
+	token := bitrix.BitrixToken
 	url := api + token + "/user.get?USER_TYPE=employee&WORK_POSITION=ASESOR%20INMOBILIARIO&UF_DEPARTMENT=59&ACTIVE=true"
 
 	req, err := http.NewRequest("GET", url, nil)

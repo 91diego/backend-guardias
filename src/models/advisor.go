@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 
+	"github.com/91diego/backend-guardias/config"
 	"gorm.io/gorm"
 )
 
@@ -47,8 +47,10 @@ type BitrixAdvisors struct {
 // UpdateBitrixGuardAdvisor update field PERSONAL_STREET by USER_ID on bitrix24
 func UpdateBitrixGuardAdvisor(advisorBitrix *AdvisorBitrix) (err error) {
 
-	api := os.Getenv("BITRIX_SITE")
-	token := os.Getenv("BITRIX_TOKEN")
+	bitrix, _ := config.SetUp()
+
+	api := bitrix.BitrixSite
+	token := bitrix.BitrixToken
 
 	params := url.Values{}
 	params.Add("ID", advisorBitrix.UserID)
