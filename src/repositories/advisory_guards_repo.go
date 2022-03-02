@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -47,10 +46,20 @@ func (repository *AdvisoryGuardRepo) GetAdvisoryGuards(c *gin.Context) {
 	})
 }
 
-// GetAdvisoryGuardByShift
-func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByShift(shift, date string, advisoryGuard *[]models.AdvisorGuard) (response *sql.Rows, err error) {
+// GetAdvisoryGuardByShift retrive current advisor guards by shift
+func (repository *AdvisoryGuardRepo) GetAdvisoryGuardByShift(shift, date string, advisoryGuard *[]models.AdvisorGuard) (err error) {
 
-	response, err = models.GetAdvisoryGuardByShift(repository.Db, shift, date, advisoryGuard)
+	err = models.GetAdvisoryGuardByShift(repository.Db, shift, date, advisoryGuard)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// GetAdvisoryGuardsDB retrive current advisor guards
+func (repository *AdvisoryGuardRepo) GetAdvisoryGuardsDB(date string, advisoryGuard *[]models.AdvisorGuard) (err error) {
+
+	err = models.GetAdvisoryGuardsDB(repository.Db, date, advisoryGuard)
 	if err != nil {
 		return
 	}
