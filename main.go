@@ -18,7 +18,7 @@ func main() {
 	c := cron.New(cron.WithLocation(mexicoCity))
 	c.AddFunc("00 10 * * *", CheckGuards)
 	c.AddFunc("30 14 * * *", CheckGuards)
-	c.AddFunc("00 19 * * *", CheckGuards)
+	c.AddFunc("12 20 * * *", CheckGuards)
 	c.Start()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -27,8 +27,8 @@ func main() {
 
 func CheckGuards() {
 
-	var guardShift string
-	var advisoryGuard []models.AdvisorGuard
+	var advisoryGuardByShift []models.AdvisorGuard
+	var advisoryGuards []models.AdvisorGuard
 	layout := "2006-01-02 15:04:05"
 	now := time.Now().UTC().Local()
 
@@ -55,7 +55,7 @@ func CheckGuards() {
 		"14", "30", "00")
 	eveningGuardChange := fmt.Sprintf("%d-%02d-%02d %02v:%02v:%02v",
 		now.Year(), now.Month(), now.Day(),
-		"19", "00", "00")
+		"20", "12", "00")
 
 	morningLayoutParse, err := time.Parse(layout, morningChangeLayout)
 	if err != nil {
@@ -86,28 +86,19 @@ func CheckGuards() {
 	}
 
 	if morningParse == morningLayoutParse {
-		guardShift = "MATUTINO"
-		repositories.New().GetAdvisoryGuardByShift(guardShift, morningGuardChange, &advisoryGuard)
+		repositories.New().GetAdvisoryGuardByShift("MATUTINO", currentDate, &advisoryGuardByShift)
 	}
 
 	if afternoonParse == afternoonLayoutParse {
-		guardShift = "VESPERTINO"
-		repositories.New().GetAdvisoryGuardByShift(guardShift, afternoonGuardChange, &advisoryGuard)
+		repositories.New().GetAdvisoryGuardByShift("VESPERTINO", currentDate, &advisoryGuardByShift)
 	}
 
 	if eveningParse == eveningLayoutParse {
-		guardShift = "NOCTURNO"
-		response, err := repositories.New().GetAdvisoryGuardByShift(guardShift, eveningGuardChange, &advisoryGuard)
-		if err != nil {
-			return
-		}
-		for response.Next() {
-			fmt.Println(response.Scan())
-		}
+		repositories.New().GetAdvisoryGuardByShift("NOCTURNO", currentDate, &advisoryGuardByShift)
 	}
 
-	fmt.Println("GUARDS:", advisoryGuard)
-	for _, v := range advisoryGuard {
+	// Add flag on B24
+	for _, v := range advisoryGuardByShift {
 		advisorBitrix := models.AdvisorBitrix{
 			UserID:        v.AdvisorBitrixID,
 			PersonalSreet: "GUARDIA " + v.Development,
@@ -115,9 +106,13 @@ func CheckGuards() {
 		_ = models.UpdateBitrixGuardAdvisor(&advisorBitrix)
 	}
 
-	fmt.Println("GUARD SHIFT:", guardShift)
-	fmt.Println("CURRENT DATE:", currentDate)
-	fmt.Println("MORNING:", morningGuardChange, morningChangeLayout)
-	fmt.Println("AFTERNOON:", afternoonGuardChange, afternoonChangeLayout)
-	fmt.Println("EVENING:", eveningGuardChange, eveningChangeLayout)
+	// Delete flag on B24
+	repositories.New().GetAdvisoryGuardsDB(currentDate, &advisoryGuards)
+	for _, v := range advisoryGuards {
+		advisorBitrix := models.AdvisorBitrix{
+			UserID:        v.AdvisorBitrixID,
+			PersonalSreet: "",
+		}
+		_ = models.UpdateBitrixGuardAdvisor(&advisorBitrix)
+	}
 }

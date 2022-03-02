@@ -1,8 +1,6 @@
 package models
 
 import (
-	"database/sql"
-
 	"gorm.io/gorm"
 )
 
@@ -28,12 +26,22 @@ func GetAdvisoryGuards(db *gorm.DB, advisoryGuard *[]AdvisorGuard) (err error) {
 	return
 }
 
-// GetAdvisoryGuardByShift
-func GetAdvisoryGuardByShift(db *gorm.DB, shift, date string, advisoryGuard *[]AdvisorGuard) (rows *sql.Rows, err error) {
+// GetAdvisoryGuardByShift retrive current advisor guards by shift
+func GetAdvisoryGuardByShift(db *gorm.DB, shift, date string, advisoryGuard *[]AdvisorGuard) (err error) {
 
-	// err = db.Where(query, shift, date).Find(&advisoryGuard).Error
-	query := "guard_shift = ? AND start_guard = ?"
-	rows, err = db.Model(&AdvisorGuard{}).Where(query, shift, date).Select("*").Rows()
+	query := "guard_shift = ? and start_guard BETWEEN ? AND ?"
+	err = db.Where(query, shift, date, date).Find(&advisoryGuard).Error
+	if err != nil {
+		return
+	}
+	return
+}
+
+// GetAdvisoryGuardsDB retrive current advisor guards
+func GetAdvisoryGuardsDB(db *gorm.DB, date string, advisoryGuard *[]AdvisorGuard) (err error) {
+
+	query := "start_guard != ?"
+	err = db.Where(query, date).Find(&advisoryGuard).Error
 	if err != nil {
 		return
 	}
