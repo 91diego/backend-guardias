@@ -20,7 +20,7 @@ func SetUp() (bitrix ConfigBitrix, db ConfigDB) {
 	bitrix.BitrixToken = "evcwp69f5yg7gkwc"
 
 	db.DbConnection = "mysql"
-	db.DbHost = "localhost"
+	db.DbHost = "host.docker.internal"
 	db.DbPort = "3306"
 	db.DbName = "guardias"
 	db.DbUserName = "root"

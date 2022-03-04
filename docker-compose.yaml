@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  nginx:
+    restart: always
+    image: "nginx:1.21.6"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - calendario
+
+  mysql:
+    platform: linux/amd64
+    restart: always
+    image: "mysql:8.0.28"
+
+  calendario:
+    restart: always
+    ports:
+      - 8087:8087
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    env_file:
+      - .env
