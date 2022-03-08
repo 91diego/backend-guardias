@@ -1,5 +1,8 @@
 version: "3"
 
+volumes:
+  mysql:
+
 services:
   nginx:
     restart: always
@@ -13,6 +16,14 @@ services:
     platform: linux/amd64
     restart: always
     image: "mysql:8.0.28"
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_TCP_PORT: ${DB_PORT}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - mysql:/var/lib/mysql
 
   calendario:
     restart: always
